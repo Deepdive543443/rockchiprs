@@ -15,4 +15,6 @@ crates.io using cargo:
 
 ```
 cargo install rockusb --example rockusb --features=nusb
+
+cargo build --release --example rockusb --features=nusb
 ```
