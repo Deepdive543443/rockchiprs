@@ -5,3 +5,5 @@ members = [
   "rockusb"
 ]
 
+[patch.crates-io]
+bmap-parser = { git = "https://github.com/Deepdive543443/bmap-rs"}
