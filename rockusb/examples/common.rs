@@ -12,6 +12,7 @@ use bmap_parser::Bmap;
 use clap::ValueEnum;
 use clap_num::maybe_hex;
 use flate2::read::GzDecoder;
+use indicatif::{ProgressBar, ProgressStyle};
 use rockfile::boot::{
     RkBootEntry, RkBootEntryBytes, RkBootHeader, RkBootHeaderBytes, RkBootHeaderEntry,
 };
@@ -248,8 +249,20 @@ where
         bmap_file.read_to_string(&mut xml)?;
         let bmap = Bmap::from_xml(&xml)?;
 
+        let pb = ProgressBar::new(bmap.mapped_blocks());
+        pb.set_style(
+            ProgressStyle::default_bar()
+                .template(
+                    "{spinner:.green} [{elapsed_precise}] [{bar:40.cyan/blue}] \
+                     {bytes}/{total_bytes} ({eta})",
+                )
+                .unwrap()
+                .progress_chars("#>-"),
+        );
+
         // HACK to minimize small writes
-        let mut writer = BufWriter::with_capacity(16 * 1024 * 1024, self.device.into_io()?);
+        let writer = BufWriter::with_capacity(16 * 1024 * 1024, self.device.into_io()?);
+        let mut writer = pb.wrap_write(writer);
 
         let mut file = File::open(path)?;
         match path.extension().and_then(OsStr::to_str) {
@@ -262,6 +275,8 @@ where
                 bmap_parser::copy(&mut file, &mut writer, &bmap)?;
             }
         }
+
+        pb.finish_with_message("write completed");
 
         Ok(())
     }
