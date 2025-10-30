@@ -16,3 +16,7 @@ crates.io using cargo:
 ```
 cargo install rockusb --example rockusb --features=nusb
 ```
+Enable Progress Bar
+```
+cargo install --path rockusb --example rockusb --features=nusb,progress
+```
